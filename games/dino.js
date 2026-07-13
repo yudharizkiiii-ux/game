@@ -65,151 +65,139 @@ window.DinoGame = {
       const legCycle = Math.floor(d.legFrame/3)%2;
       const baseX = d.x - d.w/2;
       const baseY = d.y - d.h;
-      const color = d.dead ? '#ef4444' : '#16a34a';
-      const dark = d.dead ? '#991b1b' : '#14532d';
-      const light = d.dead ? '#fca5a5' : '#86efac';
+      
+      // 4D Cyber Dino Neon Color Theme
+      const color = d.dead ? '#ef4444' : '#10b981';
+      const shadowColor = d.dead ? 'rgba(239, 68, 68, 0.6)' : 'rgba(16, 185, 129, 0.6)';
 
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 15;
       ctx.fillStyle = color;
 
       if(d.ducking) {
         // Ducking pose
-        ctx.fillRect(baseX, baseY+20, d.w+10, 24);
+        ctx.beginPath();
+        ctx.roundRect(baseX, baseY+20, d.w+12, 24, 6);
+        ctx.fill();
+        
         // Head
         ctx.fillRect(baseX+d.w-4, baseY+12, 22, 20);
-        // Eye
-        ctx.fillStyle = d.dead ? '#fee2e2' : 'white';
-        ctx.fillRect(baseX+d.w+10, baseY+14, 6, 6);
-        ctx.fillStyle = dark;
-        ctx.fillRect(baseX+d.w+12, baseY+16, 3, 3);
-        // Tail
-        ctx.fillStyle = dark;
-        ctx.fillRect(baseX-8, baseY+26, 12, 6);
+        ctx.restore();
         return;
       }
 
       // Tail
-      ctx.fillStyle = dark;
-      ctx.fillRect(baseX+2, baseY+28, 14, 8);
-      ctx.fillRect(baseX-4, baseY+34, 10, 6);
+      ctx.fillRect(baseX-4, baseY+32, 10, 8);
 
-      // Body
-      ctx.fillStyle = color;
-      ctx.fillRect(baseX+8, baseY+14, d.w-12, d.h-30);
+      // Body (sleek polygons instead of blocks for cyber aesthetic)
+      ctx.beginPath();
+      ctx.roundRect(baseX+8, baseY+14, d.w-12, d.h-30, 6);
+      ctx.fill();
 
       // Neck+Head
       ctx.fillRect(baseX+d.w-14, baseY, 22, 24);
       ctx.fillRect(baseX+d.w-8, baseY-4, 18, 14);
 
-      // Eye
-      ctx.fillStyle = d.dead ? '#fecaca' : 'white';
-      ctx.fillRect(baseX+d.w+2, baseY-2, 7, 7);
-      ctx.fillStyle = dark;
-      ctx.fillRect(baseX+d.w+4, baseY, 4, 4);
-      if(!d.dead) {
-        ctx.fillStyle='white';
-        ctx.fillRect(baseX+d.w+5, baseY+1, 1.5, 1.5);
-      }
-
-      // Mouth (X if dead)
-      if(d.dead) {
-        ctx.strokeStyle='#991b1b'; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.moveTo(baseX+d.w+2,baseY+7); ctx.lineTo(baseX+d.w+8,baseY+12); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(baseX+d.w+8,baseY+7); ctx.lineTo(baseX+d.w+2,baseY+12); ctx.stroke();
-      }
+      // Neon Eye
+      ctx.fillStyle = d.dead ? '#ef4444' : '#06b6d4';
+      ctx.fillRect(baseX+d.w+2, baseY-2, 6, 6);
 
       // Arm
       ctx.fillStyle = color;
       ctx.fillRect(baseX+d.w-16, baseY+18, 12, 6);
 
       // Legs
-      ctx.fillStyle = color;
       if(d.jumping) {
-        // Folded legs
-        ctx.fillRect(baseX+10, baseY+d.h-16, 10, 12);
-        ctx.fillRect(baseX+22, baseY+d.h-12, 10, 8);
+        ctx.fillRect(baseX+10, baseY+d.h-16, 8, 12);
+        ctx.fillRect(baseX+22, baseY+d.h-12, 8, 8);
       } else {
         if(legCycle===0) {
-          ctx.fillRect(baseX+10, baseY+d.h-18, 10, 18);
-          ctx.fillRect(baseX+22, baseY+d.h-14, 10, 6);
+          ctx.fillRect(baseX+10, baseY+d.h-18, 8, 18);
+          ctx.fillRect(baseX+22, baseY+d.h-14, 8, 6);
         } else {
-          ctx.fillRect(baseX+10, baseY+d.h-14, 10, 6);
-          ctx.fillRect(baseX+22, baseY+d.h-18, 10, 18);
+          ctx.fillRect(baseX+10, baseY+d.h-14, 8, 6);
+          ctx.fillRect(baseX+22, baseY+d.h-18, 8, 18);
         }
       }
-
-      // Back spines
-      ctx.fillStyle = dark;
-      for(let i=0;i<3;i++) { ctx.fillRect(baseX+d.w-10-i*4, baseY-2+i*2, 4, 6+i*2); }
+      ctx.restore();
     }
 
     function drawCactus(o) {
-      ctx.fillStyle = '#15803d';
+      // Glow effect for cyber-obstacles
+      ctx.save();
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = '#f59e0b';
+
       const count = o.count||1;
       for(let i=0;i<count;i++) {
         const cx = o.x + i*20;
-        ctx.fillRect(cx, o.y-o.h, 16, o.h);
-        // Arms
-        ctx.fillRect(cx-8, o.y-o.h+10, 9, 8);
-        ctx.fillRect(cx-8, o.y-o.h+6, 6, 14);
-        if(count===1) {
-          ctx.fillRect(cx+15, o.y-o.h+16, 10, 7);
-          ctx.fillRect(cx+19, o.y-o.h+12, 6, 12);
-        }
+        // Draw cyber spike shapes
+        ctx.beginPath();
+        ctx.moveTo(cx, o.y);
+        ctx.lineTo(cx + 8, o.y - o.h);
+        ctx.lineTo(cx + 16, o.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Branching spike spikes
+        ctx.fillRect(cx-4, o.y-o.h+12, 6, 4);
+        ctx.fillRect(cx+14, o.y-o.h+18, 6, 4);
       }
-      // Dark detail
-      ctx.fillStyle = '#14532d';
-      for(let i=0;i<count;i++) {
-        ctx.fillRect(o.x+i*20+3, o.y-o.h, 4, o.h);
-      }
+      ctx.restore();
     }
 
     function drawBird(o) {
-      ctx.fillStyle = '#7c3aed';
-      ctx.shadowColor = '#7c3aed';
-      ctx.shadowBlur = 8;
-      // Body
+      // Draw flying hacker drone
+      ctx.save();
+      ctx.shadowColor = '#ec4899';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = '#ec4899';
+
+      // Core drone circle
       ctx.beginPath();
-      ctx.ellipse(o.x+22, o.y+14, 16, 10, 0.1, 0, Math.PI*2);
+      ctx.arc(o.x+22, o.y+14, 12, 0, Math.PI*2);
       ctx.fill();
-      // Beak
-      ctx.fillStyle = '#f59e0b';
+
+      // Wing/Propeller blades
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(o.x+36, o.y+13);
-      ctx.lineTo(o.x+46, o.y+15);
-      ctx.lineTo(o.x+36, o.y+17);
-      ctx.closePath();
-      ctx.fill();
-      // Eye
-      ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(o.x+32,o.y+12,3,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#1e1b4b'; ctx.beginPath(); ctx.arc(o.x+33,o.y+12,1.5,0,Math.PI*2); ctx.fill();
-      // Wings
-      ctx.fillStyle = '#a78bfa';
       if(o.wingUp) {
-        ctx.beginPath(); ctx.moveTo(o.x+14,o.y+10); ctx.lineTo(o.x+28,o.y-6); ctx.lineTo(o.x+38,o.y+8); ctx.closePath(); ctx.fill();
+        ctx.moveTo(o.x+10, o.y+4);
+        ctx.lineTo(o.x+34, o.y+4);
       } else {
-        ctx.beginPath(); ctx.moveTo(o.x+14,o.y+18); ctx.lineTo(o.x+28,o.y+28); ctx.lineTo(o.x+38,o.y+18); ctx.closePath(); ctx.fill();
+        ctx.moveTo(o.x+10, o.y+24);
+        ctx.lineTo(o.x+34, o.y+24);
       }
-      ctx.shadowBlur=0;
+      ctx.stroke();
+
+      // Laser lens eye
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(o.x+30, o.y+14, 4, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.restore();
     }
 
-    function getNightFactor() { return Math.min(1, score/200); }
+    function getNightFactor() { return Math.min(1, score/250); }
 
     function drawScene() {
       const night = getNightFactor();
-      // Sky
-      const skyDay = [14,11,26];
-      const skyNight = [3,7,18];
-      const r = Math.round(skyDay[0]*(1-night)+skyNight[0]*night);
-      const g = Math.round(skyDay[1]*(1-night)+skyNight[1]*night);
-      const b = Math.round(skyDay[2]*(1-night)+skyNight[2]*night);
-      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      // Cyber sky gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+      bgGrad.addColorStop(0, '#040212');
+      bgGrad.addColorStop(1, '#0e0c26');
+      ctx.fillStyle = bgGrad;
       ctx.fillRect(0,0,W,H);
 
       // Stars (appear at night)
       if(night > 0.3) {
-        ctx.globalAlpha = (night-0.3)*2;
+        ctx.globalAlpha = (night-0.3)*1.5;
         stars.forEach(s => {
-          ctx.fillStyle='white';
+          ctx.fillStyle = '#06b6d4';
           ctx.fillRect(s.x,s.y,2,2);
         });
         ctx.globalAlpha=1;

@@ -74,74 +74,111 @@ window.SnakeGame = {
 
     function draw() {
       frame++;
-      // Background grid
-      ctx.fillStyle = '#0d1117';
+      // Background gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+      bgGrad.addColorStop(0, '#0a0a16');
+      bgGrad.addColorStop(1, '#12122b');
+      ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
-      // Grid lines
-      ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+      // Grid lines with neon blue cyber pulse
+      ctx.strokeStyle = 'rgba(6,182,212,0.06)';
       ctx.lineWidth = 1;
-      for(let x=0;x<=COLS;x++) { ctx.beginPath(); ctx.moveTo(x*CELL,0); ctx.lineTo(x*CELL,H); ctx.stroke(); }
-      for(let y=0;y<=ROWS;y++) { ctx.beginPath(); ctx.moveTo(0,y*CELL); ctx.lineTo(W,y*CELL); ctx.stroke(); }
+      for(let x=0;x<=COLS;x++) { 
+        ctx.beginPath(); 
+        ctx.moveTo(x*CELL,0); 
+        ctx.lineTo(x*CELL,H); 
+        ctx.stroke(); 
+      }
+      for(let y=0;y<=ROWS;y++) { 
+        ctx.beginPath(); 
+        ctx.moveTo(0,y*CELL); 
+        ctx.lineTo(W,y*CELL); 
+        ctx.stroke(); 
+      }
+
+      // Dynamic glowing grid border
+      ctx.strokeStyle = 'rgba(16,185,129,0.3)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(0, 0, W, H);
 
       // Particles
       particles = particles.filter(p => p.life > 0);
       particles.forEach(p => {
         ctx.globalAlpha = p.life;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 10;
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3*p.life, 0, Math.PI*2);
+        ctx.arc(p.x, p.y, 4*p.life, 0, Math.PI*2);
         ctx.fill();
-        p.x += p.vx; p.y += p.vy; p.vx *= 0.92; p.vy *= 0.92; p.life -= 0.05;
+        p.x += p.vx; p.y += p.vy; p.vx *= 0.92; p.vy *= 0.92; p.life -= 0.04;
       });
       ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
 
-      // Food with glow
-      const foodPulse = Math.sin(frame * 0.1) * 2;
+      // Food with 4D outer neon glow
+      const foodPulse = Math.sin(frame * 0.15) * 5;
       ctx.shadowColor = '#ef4444';
       ctx.shadowBlur = 15 + foodPulse;
-      drawRoundRect(food.x*CELL+2, food.y*CELL+2, CELL-4, CELL-4, 4, '#ef4444');
-      // Apple shine
+      drawRoundRect(food.x*CELL+2, food.y*CELL+2, CELL-4, CELL-4, 5, '#ef4444');
+      
+      // Food inner pulse
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = 5;
+      drawRoundRect(food.x*CELL+5, food.y*CELL+5, CELL-10, CELL-10, 3, '#f59e0b');
       ctx.shadowBlur = 0;
-      ctx.fillStyle = 'rgba(255,255,255,0.3)';
-      ctx.beginPath();
-      ctx.ellipse(food.x*CELL+7, food.y*CELL+6, 3, 2, -0.5, 0, Math.PI*2);
-      ctx.fill();
 
-      // Snake body
+      // Snake body with glowing gradient trails and digital pulse wave
       snake.forEach((seg, i) => {
         const isHead = i === 0;
-        const ratio = 1 - (i / snake.length) * 0.5;
-        const h = 120 + (i/snake.length)*60;
-        ctx.shadowColor = isHead ? '#10b981' : 'transparent';
-        ctx.shadowBlur = isHead ? 15 : 0;
-        const color = `hsl(${h}, 70%, ${40+ratio*20}%)`;
-        drawRoundRect(seg.x*CELL+1, seg.y*CELL+1, CELL-2, CELL-2, isHead ? 6 : 4, color);
+        const ratio = 1 - (i / snake.length);
+        const wave = Math.sin(frame * 0.2 - i * 0.5) * 2;
+        const h = 130 + (i / snake.length) * 45;
+        
+        ctx.shadowColor = `hsl(${h}, 85%, 55%)`;
+        ctx.shadowBlur = isHead ? 20 : 8 + wave;
+        
+        const sizeOffset = isHead ? 0 : 1 + (i / snake.length) * 2;
+        const color = `hsl(${h}, 85%, ${isHead ? 50 : 40 + ratio * 20}%)`;
+        
+        drawRoundRect(
+          seg.x * CELL + sizeOffset, 
+          seg.y * CELL + sizeOffset, 
+          CELL - sizeOffset * 2, 
+          CELL - sizeOffset * 2, 
+          isHead ? 7 : 4, 
+          color
+        );
+
         // Head eyes
         if (isHead) {
           ctx.shadowBlur = 0;
-          ctx.fillStyle = 'white';
-          const eyeX = dir.x === 1 ? 14 : dir.x === -1 ? 5 : dir.y === 1 ? [7,13] : [7,13];
-          const eyeY = dir.y === 1 ? 14 : dir.y === -1 ? 5 : dir.x ? [7,7] : null;
-          // Simplified eyes
-          if (dir.x === 1) { ctx.fillRect(seg.x*CELL+14,seg.y*CELL+5,3,3); ctx.fillRect(seg.x*CELL+14,seg.y*CELL+12,3,3); }
-          else if (dir.x === -1) { ctx.fillRect(seg.x*CELL+3,seg.y*CELL+5,3,3); ctx.fillRect(seg.x*CELL+3,seg.y*CELL+12,3,3); }
-          else if (dir.y === 1) { ctx.fillRect(seg.x*CELL+5,seg.y*CELL+14,3,3); ctx.fillRect(seg.x*CELL+12,seg.y*CELL+14,3,3); }
-          else { ctx.fillRect(seg.x*CELL+5,seg.y*CELL+3,3,3); ctx.fillRect(seg.x*CELL+12,seg.y*CELL+3,3,3); }
-          ctx.fillStyle = '#0d1117';
-          if (dir.x === 1) { ctx.fillRect(seg.x*CELL+15,seg.y*CELL+6,1,1); ctx.fillRect(seg.x*CELL+15,seg.y*CELL+13,1,1); }
-          else if (dir.x === -1) { ctx.fillRect(seg.x*CELL+4,seg.y*CELL+6,1,1); ctx.fillRect(seg.x*CELL+4,seg.y*CELL+13,1,1); }
+          ctx.fillStyle = '#ffffff';
+          // Simplified eyes with nice neon glow
+          if (dir.x === 1) { ctx.fillRect(seg.x*CELL+12,seg.y*CELL+4,4,4); ctx.fillRect(seg.x*CELL+12,seg.y*CELL+12,4,4); }
+          else if (dir.x === -1) { ctx.fillRect(seg.x*CELL+4,seg.y*CELL+4,4,4); ctx.fillRect(seg.x*CELL+4,seg.y*CELL+12,4,4); }
+          else if (dir.y === 1) { ctx.fillRect(seg.x*CELL+4,seg.y*CELL+12,4,4); ctx.fillRect(seg.x*CELL+12,seg.y*CELL+12,4,4); }
+          else { ctx.fillRect(seg.x*CELL+4,seg.y*CELL+4,4,4); ctx.fillRect(seg.x*CELL+12,seg.y*CELL+4,4,4); }
         }
       });
       ctx.shadowBlur = 0;
 
       // Score overlay
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.roundRect(8,8,110,36,8);
+      ctx.fillStyle = 'rgba(10, 10, 26, 0.8)';
+      ctx.strokeStyle = 'rgba(6,182,212,0.2)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(8,8,120,38,10);
       ctx.fill();
+      ctx.stroke();
+      
       ctx.fillStyle = '#10b981';
       ctx.font = 'bold 12px Orbitron, monospace';
+      ctx.shadowColor = '#10b981';
+      ctx.shadowBlur = 8;
       ctx.fillText(`SCORE: ${score}`, 18, 31);
+      ctx.shadowBlur = 0;
 
       animId = requestAnimationFrame(draw);
     }

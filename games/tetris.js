@@ -131,21 +131,40 @@ window.TetrisGame = {
     }
 
     function drawBlock(ctx, x, y, color, size=BLOCK) {
-      const g = ctx.createLinearGradient(x,y,x+size,y+size);
-      g.addColorStop(0, lighten(color, 30));
-      g.addColorStop(1, color);
+      // 4D Neon Block
+      const g = ctx.createLinearGradient(x, y, x + size, y + size);
+      g.addColorStop(0, lighten(color, 40));
+      g.addColorStop(0.5, color);
+      g.addColorStop(1, darken(color, 40));
       ctx.fillStyle = g;
+      
+      // Draw rounded rect with glow
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 10;
       ctx.beginPath();
-      ctx.roundRect(x+1, y+1, size-2, size-2, 3);
+      ctx.roundRect(x + 1.5, y + 1.5, size - 3, size - 3, 4);
       ctx.fill();
-      // Shine
+      ctx.shadowBlur = 0;
+
+      // Inner stroke for 4D glass bezel effect
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + 2.5, y + 2.5, size - 5, size - 5);
+
+      // Cyber gloss flare
       ctx.fillStyle = 'rgba(255,255,255,0.2)';
-      ctx.fillRect(x+3, y+3, size/2-4, 3);
+      ctx.fillRect(x + 3.5, y + 3.5, size - 7, 2);
     }
 
     function lighten(hex, amt) {
       const n = parseInt(hex.slice(1),16);
       const r = Math.min(255,(n>>16)+amt), g = Math.min(255,((n>>8)&0xff)+amt), b = Math.min(255,(n&0xff)+amt);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function darken(hex, amt) {
+      const n = parseInt(hex.slice(1),16);
+      const r = Math.max(0,(n>>16)-amt), g = Math.max(0,((n>>8)&0xff)-amt), b = Math.max(0,(n&0xff)-amt);
       return `rgb(${r},${g},${b})`;
     }
 
@@ -156,42 +175,54 @@ window.TetrisGame = {
     }
 
     function draw() {
-      ctx.fillStyle = '#0d1117';
+      // Gradient background
+      const bgGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      bgGrad.addColorStop(0, '#090915');
+      bgGrad.addColorStop(1, '#111124');
+      ctx.fillStyle = bgGrad;
       ctx.fillRect(0,0,canvas.width,canvas.height);
 
-      // Grid
-      ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+      // Neon-pulse grid lines
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.05)';
       ctx.lineWidth = 0.5;
       for(let x=0;x<=COLS;x++) { ctx.beginPath(); ctx.moveTo(x*BLOCK,0); ctx.lineTo(x*BLOCK,canvas.height); ctx.stroke(); }
       for(let y=0;y<=ROWS;y++) { ctx.beginPath(); ctx.moveTo(0,y*BLOCK); ctx.lineTo(canvas.width,y*BLOCK); ctx.stroke(); }
 
-      // Board
+      // Board blocks
       board.forEach((row,r) => row.forEach((color,c) => {
         if(color) {
           if(flashLines.includes(r)) {
-            ctx.fillStyle = 'white';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.shadowColor = '#fff';
+            ctx.shadowBlur = 15;
             ctx.fillRect(c*BLOCK,r*BLOCK,BLOCK,BLOCK);
+            ctx.shadowBlur = 0;
           } else {
             drawBlock(ctx, c*BLOCK, r*BLOCK, color);
           }
         }
       }));
 
-      // Ghost piece
+      // Ghost piece with dotted neon outlines
       if(current) {
         const gy = getGhostY();
         current.shape.forEach((row,r) => row.forEach((v,c) => {
           if(v) {
-            ctx.strokeStyle = current.color+'60';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = current.color;
+            ctx.shadowColor = current.color;
+            ctx.shadowBlur = 8;
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([2, 2]);
             ctx.strokeRect(
-              (currentPos.x+c)*BLOCK+1, (gy+r)*BLOCK+1, BLOCK-2, BLOCK-2
+              (currentPos.x+c)*BLOCK+2, (gy+r)*BLOCK+2, BLOCK-4, BLOCK-4
             );
+            ctx.setLineDash([]);
+            ctx.shadowBlur = 0;
           }
         }));
       }
 
-      // Current piece
+      // Current falling piece
       if(current) {
         current.shape.forEach((row,r) => row.forEach((v,c) => {
           if(v) drawBlock(ctx, (currentPos.x+c)*BLOCK, (currentPos.y+r)*BLOCK, current.color);
@@ -203,13 +234,24 @@ window.TetrisGame = {
 
     function drawNext() {
       if(!nextPiece) return;
-      nextCtx.fillStyle = '#0d1117';
+      const nextBgGrad = nextCtx.createLinearGradient(0, 0, 100, 100);
+      nextBgGrad.addColorStop(0, '#0a0a1a');
+      nextBgGrad.addColorStop(1, '#15152a');
+      nextCtx.fillStyle = nextBgGrad;
       nextCtx.fillRect(0,0,100,100);
+
+      // Mini grid for preview
+      nextCtx.strokeStyle = 'rgba(255,255,255,0.02)';
+      for(let i=0; i<=5; i++) {
+        nextCtx.beginPath(); nextCtx.moveTo(i*20, 0); nextCtx.lineTo(i*20, 100); nextCtx.stroke();
+        nextCtx.beginPath(); nextCtx.moveTo(0, i*20); nextCtx.lineTo(100, i*20); nextCtx.stroke();
+      }
+
       const shape = nextPiece.shape;
       const offX = (5 - shape[0].length)/2;
       const offY = (5 - shape.length)/2;
       shape.forEach((row,r) => row.forEach((v,c) => {
-        if(v) drawBlock(nextCtx, (offX+c)*20, (offY+r)*20, nextPiece.color);
+        if(v) drawBlock(nextCtx, (offX+c)*20, (offY+r)*20, nextPiece.color, 20);
       }));
     }
 

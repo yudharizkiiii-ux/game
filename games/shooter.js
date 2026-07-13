@@ -264,22 +264,32 @@ window.ShooterGame = {
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
 
-      // Player bullets
+      // Player bullets (neon cyber-lasers with tail gradients)
       bullets.forEach(b => {
         ctx.shadowColor = '#06b6d4';
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = '#06b6d4';
-        ctx.fillRect(b.x-b.w/2, b.y, b.w, b.h);
+        ctx.shadowBlur = 15;
+        const bulletGrad = ctx.createLinearGradient(b.x, b.y, b.x, b.y + b.h);
+        bulletGrad.addColorStop(0, '#ffffff');
+        bulletGrad.addColorStop(0.3, '#06b6d4');
+        bulletGrad.addColorStop(1, 'rgba(6, 182, 212, 0)');
+        ctx.fillStyle = bulletGrad;
+        ctx.beginPath();
+        ctx.roundRect(b.x - b.w/2, b.y, b.w, b.h, 3);
+        ctx.fill();
         ctx.shadowBlur = 0;
       });
 
-      // Enemy bullets
+      // Enemy bullets (hot glowing plasmatic spheres)
       enemyBullets.forEach(b => {
         ctx.shadowColor = '#ef4444';
-        ctx.shadowBlur = 8;
-        ctx.fillStyle = '#ef4444';
+        ctx.shadowBlur = 12;
+        const enemyGrad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, 6);
+        enemyGrad.addColorStop(0, '#ffffff');
+        enemyGrad.addColorStop(0.4, '#ef4444');
+        enemyGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+        ctx.fillStyle = enemyGrad;
         ctx.beginPath();
-        ctx.arc(b.x, b.y, 4, 0, Math.PI*2);
+        ctx.arc(b.x, b.y, 6, 0, Math.PI*2);
         ctx.fill();
         ctx.shadowBlur = 0;
       });

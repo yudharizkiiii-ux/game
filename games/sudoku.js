@@ -7,25 +7,31 @@ window.SudokuGame = {
 
     const style = document.createElement('style');
     style.textContent = `
-      .sudoku-wrap { display:flex; flex-direction:column; align-items:center; gap:16px; }
-      .sudoku-toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center; }
-      .sudoku-board { display:grid; grid-template-columns:repeat(9,1fr); gap:2px; background:#7c3aed; border:3px solid #7c3aed; border-radius:10px; overflow:hidden; padding:2px; }
-      .sudoku-cell { width:44px; height:44px; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:600; font-family:Orbitron,monospace; cursor:pointer; transition:all 0.15s; user-select:none; border-radius:4px; position:relative; }
-      .sudoku-cell.fixed { background:#1a1a35; color:#a78bfa; }
-      .sudoku-cell.empty { background:#0d0d1a; color:#06b6d4; }
-      .sudoku-cell.selected { background:rgba(124,58,237,0.4) !important; box-shadow:inset 0 0 0 2px #7c3aed; }
-      .sudoku-cell.highlight { background:rgba(124,58,237,0.12); }
-      .sudoku-cell.error { background:rgba(239,68,68,0.25) !important; color:#ef4444 !important; }
-      .sudoku-cell.correct { background:rgba(16,185,129,0.15); }
-      .sudoku-cell.hint { background:rgba(245,158,11,0.25) !important; color:#f59e0b !important; }
-      /* Box borders */
-      .sudoku-cell:nth-child(3n) { border-right:2px solid #7c3aed40; }
-      .sudoku-numpad { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
-      .sudoku-num-btn { width:48px; height:48px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#f0f0ff; font-family:Orbitron,monospace; font-size:18px; font-weight:700; cursor:pointer; transition:all 0.15s; }
-      .sudoku-num-btn:hover { background:rgba(124,58,237,0.3); border-color:#7c3aed; }
-      .sudoku-time { font-family:Orbitron,monospace; font-size:14px; color:#06b6d4; }
-      .sudoku-info { display:flex; gap:16px; font-size:13px; color:#6b7280; }
-      .sudoku-info span { color:#a78bfa; font-weight:600; }
+      .sudoku-wrap { display:flex; flex-direction:column; align-items:center; gap:18px; }
+      .sudoku-toolbar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center; }
+      .sudoku-board { display:grid; grid-template-columns:repeat(9,1fr); gap:1.5px; background:rgba(6, 182, 212, 0.25); border:3px solid rgba(6, 182, 212, 0.4); border-radius:12px; overflow:hidden; padding:3px; box-shadow: 0 0 25px rgba(6, 182, 212, 0.2), inset 0 0 15px rgba(6, 182, 212, 0.15); }
+      .sudoku-cell { width:42px; height:42px; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; font-family:Orbitron,monospace; cursor:pointer; transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1); user-select:none; border-radius:6px; position:relative; }
+      .sudoku-cell.fixed { background:rgba(255, 255, 255, 0.05); color:#a855f7; text-shadow: 0 0 8px rgba(168, 85, 247, 0.4); }
+      .sudoku-cell.empty { background:rgba(10, 10, 24, 0.85); color:#06b6d4; }
+      .sudoku-cell.selected { background:rgba(6, 182, 212, 0.3) !important; box-shadow:inset 0 0 0 2px #06b6d4, 0 0 15px rgba(6, 182, 212, 0.4); z-index: 2; }
+      .sudoku-cell.highlight { background:rgba(124, 58, 237, 0.18); }
+      .sudoku-cell.error { background:rgba(239, 68, 68, 0.35) !important; color:#ef4444 !important; text-shadow: 0 0 8px #ef4444; box-shadow: inset 0 0 8px rgba(239, 68, 68, 0.5); }
+      .sudoku-cell.correct { background:rgba(16, 185, 129, 0.25); color:#10b981; }
+      .sudoku-cell.hint { background:rgba(245, 158, 11, 0.35) !important; color:#f59e0b !important; text-shadow: 0 0 8px #f59e0b; }
+      /* 3x3 block borders */
+      .sudoku-cell:nth-child(3n) { border-right: 2px solid rgba(6, 182, 212, 0.4); }
+      .sudoku-cell:nth-child(9n) { border-right: none; }
+      /* Horizontal 3x3 dividers */
+      .sudoku-board > div:nth-child(n+19):nth-child(-n+27),
+      .sudoku-board > div:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid rgba(6, 182, 212, 0.4); }
+      
+      .sudoku-numpad { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:8px; }
+      .sudoku-num-btn { width:46px; height:46px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; color:#f0f0ff; font-family:Orbitron,monospace; font-size:18px; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+      .sudoku-num-btn:hover { background:rgba(6, 182, 212, 0.25); border-color:#06b6d4; box-shadow: 0 0 10px rgba(6, 182, 212, 0.4); transform: translateY(-2px); }
+      .sudoku-num-btn:active { transform: translateY(0); }
+      .sudoku-time { font-family:Orbitron,monospace; font-size:16px; color:#06b6d4; text-shadow: 0 0 8px rgba(6, 182, 212, 0.4); font-weight:700; }
+      .sudoku-info { display:flex; gap:20px; font-size:13px; color:#9090b8; margin-top:4px; }
+      .sudoku-info span { color:#a855f7; font-weight:700; text-shadow: 0 0 5px rgba(168, 85, 247, 0.4); }
     `;
     document.head.appendChild(style);
 

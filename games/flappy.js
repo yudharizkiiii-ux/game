@@ -25,22 +25,30 @@ window.FlappyGame = {
     const PIPE_INTERVAL = 95;
 
     // Sky colors
+    // Cyber grid/sky colors
     const skyGrad = ctx.createLinearGradient(0,0,0,H);
-    skyGrad.addColorStop(0,'#0c4a6e');
-    skyGrad.addColorStop(0.6,'#0369a1');
-    skyGrad.addColorStop(1,'#0ea5e9');
+    skyGrad.addColorStop(0,'#03001e');
+    skyGrad.addColorStop(0.5,'#7303c0');
+    skyGrad.addColorStop(1,'#ec38bc');
 
     function flap() {
       if(gameState === 'dead') return;
       if(gameState === 'ready') gameState = 'playing';
       bird.vy = FLAP;
       bird.flapTimer = 8;
-      addParticle(bird.x-10, bird.y+10);
+      addParticle(bird.x-10, bird.y);
     }
 
     function addParticle(x, y) {
-      for(let i=0;i<4;i++) {
-        particles.push({x,y,vx:(Math.random()-0.5)*3,vy:-(Math.random()*2+1),life:1,size:Math.random()*4+2});
+      for(let i=0;i<8;i++) {
+        particles.push({
+          x, y,
+          vx: -(Math.random()*4+2),
+          vy: (Math.random()-0.5)*3,
+          life: 1,
+          size: Math.random()*5+2,
+          color: `hsl(${180+Math.random()*60}, 90%, 65%)`
+        });
       }
     }
 
@@ -55,96 +63,94 @@ window.FlappyGame = {
       ctx.translate(b.x, b.y);
       ctx.rotate(b.angle * Math.PI/180);
 
-      // Body
-      ctx.fillStyle = '#fbbf24';
-      ctx.beginPath();
-      ctx.ellipse(0, 0, b.r, b.r*0.85, 0, 0, Math.PI*2);
-      ctx.fill();
+      // Glow effect
+      ctx.shadowColor = '#06b6d4';
+      ctx.shadowBlur = 15;
 
-      // Wing
-      const wingY = b.flapTimer > 0 ? -6 : 4;
-      ctx.fillStyle = '#f59e0b';
+      // Draw futuristic cyber wing/ship
+      ctx.fillStyle = '#06b6d4';
       ctx.beginPath();
-      ctx.ellipse(-4, wingY, 10, 5, -0.3, 0, Math.PI*2);
-      ctx.fill();
-
-      // Eye
-      ctx.fillStyle = 'white';
-      ctx.beginPath();
-      ctx.arc(8, -5, 6, 0, Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle = '#1e1b4b';
-      ctx.beginPath();
-      ctx.arc(9, -5, 3, 0, Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle = 'white';
-      ctx.beginPath();
-      ctx.arc(10, -6, 1, 0, Math.PI*2);
-      ctx.fill();
-
-      // Beak
-      ctx.fillStyle = '#f97316';
-      ctx.beginPath();
-      ctx.moveTo(12, -1);
-      ctx.lineTo(20, 2);
-      ctx.lineTo(12, 5);
+      ctx.moveTo(-16, -10);
+      ctx.lineTo(16, 0);
+      ctx.lineTo(-16, 10);
+      ctx.lineTo(-10, 0);
       ctx.closePath();
       ctx.fill();
 
-      // Cheek
-      ctx.fillStyle = 'rgba(239,68,68,0.4)';
+      // Core engine glow
+      ctx.shadowColor = '#ec4899';
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = '#ec4899';
       ctx.beginPath();
-      ctx.ellipse(6, 2, 4, 3, 0, 0, Math.PI*2);
+      ctx.arc(-8, 0, 5, 0, Math.PI*2);
       ctx.fill();
 
       ctx.restore();
+      ctx.shadowBlur = 0;
     }
 
     function drawPipe(p) {
       const gapY = p.topH + GAP;
-      const pipeColor = '#16a34a';
-      const pipeHighlight = '#22c55e';
-      const pipeShadow = '#14532d';
-
-      // Top pipe
-      ctx.fillStyle = pipeColor;
+      
+      // Top pipe: Laser barrier style
+      const topGrad = ctx.createLinearGradient(p.x, 0, p.x + PIPE_W, 0);
+      topGrad.addColorStop(0, 'rgba(236, 72, 153, 0.4)');
+      topGrad.addColorStop(0.5, '#ec4899');
+      topGrad.addColorStop(1, 'rgba(236, 72, 153, 0.4)');
+      ctx.fillStyle = topGrad;
       ctx.fillRect(p.x, 0, PIPE_W, p.topH);
-      // Cap
-      ctx.fillStyle = pipeHighlight;
-      ctx.fillRect(p.x-4, p.topH-20, PIPE_W+8, 22);
-      ctx.fillStyle = pipeColor;
-      ctx.fillRect(p.x-4, p.topH-20, PIPE_W+8, 4);
 
-      // Bottom pipe
-      ctx.fillStyle = pipeColor;
+      // Top pipe glowing head
+      ctx.shadowColor = '#ec4899';
+      ctx.shadowBlur = 15;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(p.x - 2, p.topH - 12, PIPE_W + 4, 14);
+
+      // Bottom pipe: Laser barrier style
+      const bottomGrad = ctx.createLinearGradient(p.x, gapY, p.x + PIPE_W, gapY);
+      bottomGrad.addColorStop(0, 'rgba(236, 72, 153, 0.4)');
+      bottomGrad.addColorStop(0.5, '#ec4899');
+      bottomGrad.addColorStop(1, 'rgba(236, 72, 153, 0.4)');
+      ctx.fillStyle = bottomGrad;
       ctx.fillRect(p.x, gapY, PIPE_W, H-gapY-60);
-      // Cap
-      ctx.fillStyle = pipeHighlight;
-      ctx.fillRect(p.x-4, gapY, PIPE_W+8, 22);
-      ctx.fillStyle = pipeColor;
-      ctx.fillRect(p.x-4, gapY+18, PIPE_W+8, 4);
 
-      // Shine on pipes
-      ctx.fillStyle = 'rgba(255,255,255,0.1)';
-      ctx.fillRect(p.x+4, 0, 8, p.topH-20);
-      ctx.fillRect(p.x+4, gapY+22, 8, H-gapY-80);
+      // Bottom pipe glowing head
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(p.x - 2, gapY, PIPE_W + 4, 14);
+      ctx.shadowBlur = 0;
+
+      // Laser stream inside the pipe columns
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(p.x + PIPE_W/2, 0);
+      ctx.lineTo(p.x + PIPE_W/2, p.topH);
+      ctx.moveTo(p.x + PIPE_W/2, gapY);
+      ctx.lineTo(p.x + PIPE_W/2, H-60);
+      ctx.stroke();
     }
 
     function drawGround() {
-      ctx.fillStyle = '#92400e';
+      // Dark cybernetic floor
+      ctx.fillStyle = '#0a0a16';
       ctx.fillRect(0, H-60, W, 60);
-      ctx.fillStyle = '#a16207';
-      ctx.fillRect(0, H-60, W, 10);
+      
+      ctx.strokeStyle = '#ec4899';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, H-60);
+      ctx.lineTo(W, H-60);
+      ctx.stroke();
 
-      // Grass
-      ctx.fillStyle = '#16a34a';
-      ctx.fillRect(0, H-62, W, 6);
-
-      // Moving ground marks
-      ctx.fillStyle = 'rgba(0,0,0,0.15)';
-      for(let i=0;i<12;i++) {
-        const gx = ((frame*PIPE_SPEED*0.5 + i*45) % W);
-        ctx.fillRect(gx, H-55, 25, 4);
+      // Moving cyber floor lines
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+      ctx.lineWidth = 1.5;
+      for(let i=0;i<10;i++) {
+        const gx = ((frame*PIPE_SPEED*0.7 + i*50) % (W + 60)) - 30;
+        ctx.beginPath();
+        ctx.moveTo(gx, H-60);
+        ctx.lineTo(gx - 15, H);
+        ctx.stroke();
       }
     }
 

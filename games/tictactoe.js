@@ -7,26 +7,27 @@ window.TicTacToeGame = {
 
     const style = document.createElement('style');
     style.textContent = `
-      .ttt-wrap { display:flex; flex-direction:column; align-items:center; gap:20px; }
-      .ttt-status { font-size:18px; font-weight:600; text-align:center; min-height:28px; }
-      .ttt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-      .ttt-cell { width:110px; height:110px; background:rgba(255,255,255,0.05); border:2px solid rgba(255,255,255,0.1); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:52px; cursor:pointer; transition:all 0.2s; user-select:none; }
-      .ttt-cell:hover:not(.taken) { background:rgba(124,58,237,0.15); border-color:#7c3aed; transform:scale(1.03); }
-      .ttt-cell.X { color:#ec4899; text-shadow:0 0 20px rgba(236,72,153,0.5); }
-      .ttt-cell.O { color:#06b6d4; text-shadow:0 0 20px rgba(6,182,212,0.5); }
-      .ttt-cell.win { background:rgba(16,185,129,0.2) !important; border-color:#10b981 !important; animation:ttt-win-pulse 0.5s ease; }
+      .ttt-wrap { display:flex; flex-direction:column; align-items:center; gap:24px; }
+      .ttt-status { font-family:Orbitron,monospace; font-size:16px; font-weight:700; text-align:center; min-height:28px; color:#f0f0ff; text-transform:uppercase; letter-spacing:1.5px; }
+      .ttt-board { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; background:rgba(6, 182, 212, 0.05); padding:16px; border-radius:24px; border:1px solid rgba(6, 182, 212, 0.15); box-shadow: inset 0 0 15px rgba(6, 182, 212, 0.1); }
+      .ttt-cell { width:100px; height:100px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:48px; cursor:pointer; transition:all 0.25s cubic-bezier(0.4, 0, 0.2, 1); user-select:none; }
+      .ttt-cell:hover:not(.taken) { background:rgba(6, 182, 212, 0.15); border-color:#06b6d4; box-shadow: 0 0 15px rgba(6, 182, 212, 0.3); transform: translateY(-4px) scale(1.02); }
+      .ttt-cell.X { color:#ec4899; text-shadow:0 0 15px rgba(236,72,153,0.8), 0 0 30px rgba(236,72,153,0.4); font-family:Orbitron,monospace; font-weight:900; }
+      .ttt-cell.O { color:#06b6d4; text-shadow:0 0 15px rgba(6,182,212,0.8), 0 0 30px rgba(6,182,212,0.4); font-family:Orbitron,monospace; font-weight:900; }
+      .ttt-cell.win { background:rgba(16,185,129,0.2) !important; border-color:#10b981 !important; box-shadow: 0 0 25px rgba(16,185,129,0.5); animation:ttt-win-pulse 0.6s ease infinite alternate; }
       .ttt-cell.taken { cursor:not-allowed; }
-      @keyframes ttt-win-pulse { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
-      .ttt-scores { display:flex; gap:24px; }
-      .ttt-score-item { text-align:center; }
-      .ttt-score-label { font-size:12px; color:#6b7280; text-transform:uppercase; letter-spacing:1px; display:block; }
-      .ttt-score-val { font-family:Orbitron,monospace; font-size:28px; font-weight:700; }
-      .ttt-score-item.you .ttt-score-val { color:#06b6d4; }
-      .ttt-score-item.ai .ttt-score-val { color:#ec4899; }
-      .ttt-score-item.draw .ttt-score-val { color:#6b7280; }
-      .ttt-difficulty { display:flex; gap:8px; }
-      .ttt-diff-btn { padding:6px 14px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#9ca3af; font-size:12px; font-weight:600; cursor:pointer; font-family:Outfit,sans-serif; transition:all 0.15s; }
-      .ttt-diff-btn.active { background:#7c3aed; border-color:#7c3aed; color:white; }
+      @keyframes ttt-win-pulse { 0%{transform:scale(1)} 100%{transform:scale(1.05)} }
+      .ttt-scores { display:flex; gap:20px; background:rgba(255,255,255,0.02); padding:10px 20px; border-radius:16px; border:1px solid rgba(255,255,255,0.05); }
+      .ttt-score-item { text-align:center; min-width:60px; }
+      .ttt-score-label { font-size:10px; color:#9090b8; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:4px; }
+      .ttt-score-val { font-family:Orbitron,monospace; font-size:24px; font-weight:700; }
+      .ttt-score-item.you .ttt-score-val { color:#06b6d4; text-shadow: 0 0 8px rgba(6,182,212,0.3); }
+      .ttt-score-item.ai .ttt-score-val { color:#ec4899; text-shadow: 0 0 8px rgba(236,72,153,0.3); }
+      .ttt-score-item.draw .ttt-score-val { color:#9090b8; }
+      .ttt-difficulty { display:flex; gap:10px; }
+      .ttt-diff-btn { padding:6px 16px; border-radius:20px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:#9090b8; font-size:11px; font-weight:600; cursor:pointer; font-family:Outfit,sans-serif; transition:all 0.2s; }
+      .ttt-diff-btn:hover { background:rgba(255,255,255,0.08); color:#f0f0ff; }
+      .ttt-diff-btn.active { background:linear-gradient(135deg,#7c3aed,#06b6d4); border-color:#06b6d4; color:white; box-shadow: 0 0 10px rgba(6,182,212,0.4); }
     `;
     document.head.appendChild(style);
 
