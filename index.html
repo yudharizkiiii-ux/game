@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GameHub — Platform Game Online Terbaik</title>
+  <meta name="description" content="GameHub adalah platform game online terlengkap dengan 8 game klasik seru: Snake, Tetris, 2048, Sudoku, Tic Tac Toe, Space Shooter, Flappy Bird, dan Dino Run." />
+  <meta name="keywords" content="game online, snake, tetris, 2048, sudoku, flappy bird, dino run, space shooter" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===== PARTICLES BACKGROUND ===== -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ===== MOBILE OVERLAY ===== -->
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="url(#logoGrad)"/>
+          <path d="M8 16h4M10 14v4M18 15h2M22 15h2M20 18.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#7c3aed"/>
+              <stop offset="1" stop-color="#06b6d4"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <span class="logo-text">GameHub</span>
+    </div>
+    <button class="sidebar-close" id="sidebar-close" aria-label="Tutup sidebar">✕</button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item active" data-page="home" id="nav-home">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </a>
+    <a href="#" class="nav-item" data-page="games" id="nav-games">
+      <span class="nav-icon">🎮</span>
+      <span class="nav-label">Daftar Game</span>
+    </a>
+    <a href="#" class="nav-item" data-page="new" id="nav-new">
+      <span class="nav-icon">🔥</span>
+      <span class="nav-label">Game Terbaru</span>
+      <span class="nav-badge">8</span>
+    </a>
+    <a href="#" class="nav-item" data-page="leaderboard" id="nav-leaderboard">
+      <span class="nav-icon">🏆</span>
+      <span class="nav-label">Leaderboard</span>
+    </a>
+    <a href="#" class="nav-item" data-page="profile" id="nav-profile">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">Profil</span>
+    </a>
+    <a href="#" class="nav-item" data-page="chat" id="nav-chat">
+      <span class="nav-icon">💬</span>
+      <span class="nav-label">Chat</span>
+      <span class="nav-dot"></span>
+    </a>
+    <a href="#" class="nav-item" data-page="settings" id="nav-settings">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Pengaturan</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+      <span class="theme-icon">🌙</span>
+      <span class="theme-label">Dark Mode</span>
+      <div class="toggle-switch">
+        <div class="toggle-knob"></div>
+      </div>
+    </button>
+  </div>
+</aside>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main-content" id="main-content">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button class="hamburger" id="hamburger" aria-label="Buka menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-title" id="topbar-title">🏠 Home</div>
+    <div class="topbar-right">
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Cari game..." autocomplete="off" />
+        <span class="search-icon">🔍</span>
+      </div>
+      <div class="user-avatar" id="topbar-avatar" data-page="profile">🎮</div>
+    </div>
+  </header>
+
+  <!-- ===== PAGE: HOME ===== -->
+  <section class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">✨ Platform Game #1 Indonesia</div>
+        <h1 class="hero-title">Selamat Datang di <span class="gradient-text">GameHub</span></h1>
+        <p class="hero-subtitle">8 game seru siap dimainkan. Dari puzzle legendaris hingga aksi intens — semua ada di sini, gratis selamanya.</p>
+        <div class="hero-actions">
+          <button class="btn-primary" id="hero-play-btn">🎮 Main Sekarang</button>
+          <button class="btn-secondary" data-page="leaderboard">🏆 Lihat Ranking</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="floating-cards">
+          <div class="float-card fc1">🐍</div>
+          <div class="float-card fc2">🟦</div>
+          <div class="float-card fc3">🔢</div>
+          <div class="float-card fc4">🚀</div>
+          <div class="float-card fc5">🐦</div>
+          <div class="float-card fc6">🦕</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-number" id="stat-games-played">0</span>
+        <span class="stat-label">Games Dimainkan</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number">8</span>
+        <span class="stat-label">Game Tersedia</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number" id="stat-best-score">0</span>
+        <span class="stat-label">Best Score</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number" id="stat-achievements">0</span>
+        <span class="stat-label">Achievements</span>
+      </div>
+    </div>
+
+    <!-- FEATURED GAMES -->
+    <div class="section-header">
+      <h2 class="section-title">🎯 Game Pilihan</h2>
+      <a href="#" class="see-all" data-page="games">Lihat Semua →</a>
+    </div>
+    <div class="games-grid" id="home-games-grid"></div>
+  </section>
+
+  <!-- ===== PAGE: DAFTAR GAME ===== -->
+  <section class="page" id="page-games">
+    <div class="page-header">
+      <h1>🎮 Daftar Game</h1>
+      <p>Pilih game favoritmu dan mulai petualangan!</p>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">Semua</button>
+      <button class="filter-btn" data-filter="arcade">Arcade</button>
+      <button class="filter-btn" data-filter="puzzle">Puzzle</button>
+      <button class="filter-btn" data-filter="action">Action</button>
+    </div>
+    <div class="games-grid" id="all-games-grid"></div>
+  </section>
+
+  <!-- ===== PAGE: GAME TERBARU ===== -->
+  <section class="page" id="page-new">
+    <div class="page-header">
+      <h1>🔥 Game Terbaru</h1>
+      <p>Game-game terbaru yang baru saja hadir di GameHub</p>
+    </div>
+    <div class="new-games-list" id="new-games-list"></div>
+  </section>
+
+  <!-- ===== PAGE: LEADERBOARD ===== -->
+  <section class="page" id="page-leaderboard">
+    <div class="page-header">
+      <h1>🏆 Leaderboard</h1>
+      <p>Raih skor tertinggi dan masuk papan peringkat!</p>
+    </div>
+    <div class="lb-tabs" id="lb-tabs"></div>
+    <div class="lb-content" id="lb-content"></div>
+  </section>
+
+  <!-- ===== PAGE: PROFIL ===== -->
+  <section class="page" id="page-profile">
+    <div class="page-header">
+      <h1>👤 Profil</h1>
+    </div>
+    <div class="profile-container">
+      <div class="profile-card">
+        <div class="avatar-selector">
+          <div class="avatar-display" id="avatar-display">🎮</div>
+          <div class="avatar-grid" id="avatar-grid"></div>
+        </div>
+        <div class="profile-info">
+          <div class="profile-field">
+            <label>Username</label>
+            <div class="profile-input-wrap">
+              <input type="text" id="username-input" maxlength="20" placeholder="Masukkan username..." />
+              <button class="save-btn" id="save-username">💾 Simpan</button>
+            </div>
+          </div>
+          <div class="profile-field">
+            <label>Bergabung</label>
+            <span id="join-date" class="profile-value">—</span>
+          </div>
+          <div class="profile-field">
+            <label>Rank</label>
+            <span class="profile-rank" id="profile-rank">🥉 Pemula</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-stats">
+        <h3>📊 Statistik Per Game</h3>
+        <div class="game-stats-grid" id="game-stats-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PAGE: CHAT ===== -->
+  <section class="page" id="page-chat">
+    <div class="page-header">
+      <h1>💬 Chat</h1>
+    </div>
+    <div class="chat-container">
+      <div class="chat-sidebar">
+        <div class="chat-room active">
+          <div class="chat-room-icon">🤖</div>
+          <div class="chat-room-info">
+            <span class="chat-room-name">GameBot</span>
+            <span class="chat-room-last">Tanya apa saja!</span>
+          </div>
+          <span class="chat-room-badge">AI</span>
+        </div>
+        <div class="chat-room">
+          <div class="chat-room-icon">🌐</div>
+          <div class="chat-room-info">
+            <span class="chat-room-name">Global Chat</span>
+            <span class="chat-room-last">Segera hadir...</span>
+          </div>
+        </div>
+      </div>
+      <div class="chat-main">
+        <div class="chat-header">
+          <div class="chat-bot-avatar">🤖</div>
+          <div>
+            <div class="chat-bot-name">GameBot AI</div>
+            <div class="chat-bot-status">● Online</div>
+          </div>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-msg bot">
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-bubble">Halo! Saya GameBot. Tanyakan apa saja tentang game di GameHub! 🎮</div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <div class="quick-replies" id="quick-replies">
+            <button class="quick-reply" data-msg="Game apa yang paling seru?">🎮 Game seru?</button>
+            <button class="quick-reply" data-msg="Bagaimana cara bermain Snake?">🐍 Cara main Snake?</button>
+            <button class="quick-reply" data-msg="Bagaimana cara menang di 2048?">🔢 Tips 2048?</button>
+            <button class="quick-reply" data-msg="Siapa yang ada di leaderboard?">🏆 Leaderboard?</button>
+          </div>
+          <div class="chat-input-wrap">
+            <input type="text" id="chat-input" placeholder="Ketik pesan..." autocomplete="off" />
+            <button id="chat-send" class="chat-send-btn">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PAGE: PENGATURAN ===== -->
+  <section class="page" id="page-settings">
+    <div class="page-header">
+      <h1>⚙️ Pengaturan</h1>
+    </div>
+    <div class="settings-container">
+      <div class="settings-group">
+        <h3>🎵 Audio</h3>
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">Efek Suara</span>
+            <span class="setting-desc">Aktifkan suara saat bermain game</span>
+          </div>
+          <label class="toggle-label">
+            <input type="checkbox" id="sound-toggle" checked />
+            <div class="toggle-visual"></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>🎮 Gameplay</h3>
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">Kesulitan Default</span>
+            <span class="setting-desc">Tingkat kesulitan awal saat memulai game</span>
+          </div>
+          <select id="difficulty-select" class="setting-select">
+            <option value="easy">Mudah</option>
+            <option value="medium" selected>Sedang</option>
+            <option value="hard">Sulit</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">Tampilkan FPS</span>
+            <span class="setting-desc">Tampilkan penghitung frame per detik</span>
+          </div>
+          <label class="toggle-label">
+            <input type="checkbox" id="fps-toggle" />
+            <div class="toggle-visual"></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>🎨 Tampilan</h3>
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">Mode Gelap</span>
+            <span class="setting-desc">Gunakan tema gelap</span>
+          </div>
+          <label class="toggle-label">
+            <input type="checkbox" id="dark-toggle" checked />
+            <div class="toggle-visual"></div>
+          </label>
+        </div>
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">Animasi Partikel</span>
+            <span class="setting-desc">Efek partikel pada latar belakang</span>
+          </div>
+          <label class="toggle-label">
+            <input type="checkbox" id="particles-toggle" checked />
+            <div class="toggle-visual"></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group danger-zone">
+        <h3>⚠️ Zona Berbahaya</h3>
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">Reset Semua Data</span>
+            <span class="setting-desc">Hapus semua skor, profil, dan pengaturan</span>
+          </div>
+          <button class="btn-danger" id="reset-data-btn">🗑️ Reset Data</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== GAME MODAL ===== -->
+<div class="game-modal" id="game-modal">
+  <div class="game-modal-overlay" id="game-modal-overlay"></div>
+  <div class="game-modal-content">
+    <div class="game-modal-header">
+      <div class="game-modal-title">
+        <span id="game-modal-icon">🎮</span>
+        <span id="game-modal-name">Game</span>
+      </div>
+      <div class="game-modal-controls">
+        <div class="game-score-display">
+          <span class="score-label">Skor</span>
+          <span class="score-value" id="modal-score">0</span>
+        </div>
+        <button class="modal-btn" id="game-restart-btn" title="Restart">🔄</button>
+        <button class="modal-btn" id="game-close-btn" title="Tutup">✕</button>
+      </div>
+    </div>
+    <div class="game-area" id="game-area">
+      <!-- Game content injected here -->
+    </div>
+    <div class="game-instructions" id="game-instructions"></div>
+  </div>
+</div>
+
+<!-- ===== TOAST NOTIFICATION ===== -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== CONFIRM MODAL ===== -->
+<div class="confirm-modal" id="confirm-modal">
+  <div class="confirm-content">
+    <div class="confirm-icon">⚠️</div>
+    <h3 id="confirm-title">Konfirmasi</h3>
+    <p id="confirm-message">Apakah Anda yakin?</p>
+    <div class="confirm-actions">
+      <button class="btn-secondary" id="confirm-cancel">Batal</button>
+      <button class="btn-danger" id="confirm-ok">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="app.js"></script>
+<script src="games/snake.js"></script>
+<script src="games/tetris.js"></script>
+<script src="games/2048.js"></script>
+<script src="games/sudoku.js"></script>
+<script src="games/tictactoe.js"></script>
+<script src="games/shooter.js"></script>
+<script src="games/flappy.js"></script>
+<script src="games/dino.js"></script>
+</body>
+</html>
