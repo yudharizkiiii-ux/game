@@ -1,4 +1,4 @@
-// ===== FLAPPY BIRD (ORIGINAL) =====
+// ===== FLAPPY BIRD =====
 window.FlappyGame = {
   launch() {
     const area = document.getElementById('game-area');
@@ -13,7 +13,7 @@ window.FlappyGame = {
     area.appendChild(canvas);
     const ctx = canvas.getContext('2d');
 
-    const GRAVITY = 0.45, FLAP = -7, PIPE_W = 52, GAP = 160, PIPE_SPEED = 2.2;
+    const GRAVITY = 0.42, FLAP = -6.8, PIPE_W = 56, GAP = 155, PIPE_SPEED = 2.2;
 
     let bird = {x:90, y:H/2, vy:0, r:16, angle:0, flapTimer:0};
     let pipes = [];
@@ -23,31 +23,39 @@ window.FlappyGame = {
     let particles = [];
     let pipeTimer = 0;
     const PIPE_INTERVAL = 95;
+    
+    // Parallax background elements
+    let clouds = [
+      {x: 40, y: 70, w: 70, speed: 0.2},
+      {x: 200, y: 130, w: 90, speed: 0.1},
+      {x: 320, y: 50, w: 60, speed: 0.15}
+    ];
 
-    // Sky colors
-    // Cyber grid/sky colors
     const skyGrad = ctx.createLinearGradient(0,0,0,H);
-    skyGrad.addColorStop(0,'#03001e');
-    skyGrad.addColorStop(0.5,'#7303c0');
-    skyGrad.addColorStop(1,'#ec38bc');
+    skyGrad.addColorStop(0,'#050024');
+    skyGrad.addColorStop(0.5,'#5d0c8d');
+    skyGrad.addColorStop(1,'#d946ef');
 
     function flap() {
       if(gameState === 'dead') return;
       if(gameState === 'ready') gameState = 'playing';
       bird.vy = FLAP;
       bird.flapTimer = 8;
-      addParticle(bird.x-10, bird.y);
+      addParticle(bird.x - 12, bird.y);
     }
 
-    function addParticle(x, y) {
-      for(let i=0;i<8;i++) {
+    function addParticle(x, y, count=8) {
+      for(let i=0;i<count;i++) {
+        const angle = Math.random()*Math.PI*2;
+        const speed = Math.random()*3+1.5;
         particles.push({
           x, y,
-          vx: -(Math.random()*4+2),
+          vx: -(Math.random()*3+1),
           vy: (Math.random()-0.5)*3,
           life: 1,
-          size: Math.random()*5+2,
-          color: `hsl(${180+Math.random()*60}, 90%, 65%)`
+          size: Math.random()*5+2.5,
+          color: Math.random() < 0.5 ? '#22d3ee' : '#e879f9',
+          decay: 0.04
         });
       }
     }
@@ -63,26 +71,54 @@ window.FlappyGame = {
       ctx.translate(b.x, b.y);
       ctx.rotate(b.angle * Math.PI/180);
 
-      // Glow effect
-      ctx.shadowColor = '#06b6d4';
-      ctx.shadowBlur = 15;
+      // Cyber Glow
+      ctx.shadowColor = '#22d3ee';
+      ctx.shadowBlur = 12;
 
-      // Draw futuristic cyber wing/ship
-      ctx.fillStyle = '#06b6d4';
+      // Bird body (Glowing circle with radial shading)
+      const bodyGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, b.r);
+      bodyGrad.addColorStop(0, '#ffffff');
+      bodyGrad.addColorStop(0.4, '#22d3ee');
+      bodyGrad.addColorStop(1, '#0891b2');
+      ctx.fillStyle = bodyGrad;
       ctx.beginPath();
-      ctx.moveTo(-16, -10);
-      ctx.lineTo(16, 0);
-      ctx.lineTo(-16, 10);
-      ctx.lineTo(-10, 0);
+      ctx.arc(0, 0, b.r, 0, Math.PI*2);
+      ctx.fill();
+
+      // Cyber Beak (yellow glowing arrow)
+      ctx.fillStyle = '#fbbf24';
+      ctx.shadowColor = '#fbbf24';
+      ctx.beginPath();
+      ctx.moveTo(b.r - 2, -6);
+      ctx.lineTo(b.r + 10, 0);
+      ctx.lineTo(b.r - 2, 6);
       ctx.closePath();
       ctx.fill();
 
-      // Core engine glow
-      ctx.shadowColor = '#ec4899';
-      ctx.shadowBlur = 10;
-      ctx.fillStyle = '#ec4899';
+      // Big round Eye
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = '#ffffff';
       ctx.beginPath();
-      ctx.arc(-8, 0, 5, 0, Math.PI*2);
+      ctx.arc(5, -4, 5, 0, Math.PI*2);
+      ctx.fill();
+
+      // Pupil (looking forward)
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(6.5, -4, 2.2, 0, Math.PI*2);
+      ctx.fill();
+
+      // Animated Cyber Wing (flapping up/down)
+      ctx.shadowColor = '#d946ef';
+      ctx.fillStyle = '#d946ef';
+      const wingCycle = Math.sin(frame * 0.4) * 8;
+      const wingOffset = b.flapTimer > 0 ? -12 : wingCycle;
+      
+      ctx.beginPath();
+      ctx.moveTo(-10, 0);
+      ctx.quadraticCurveTo(-4, -12 + wingOffset, 2, 0);
+      ctx.quadraticCurveTo(-4, 4 + wingOffset/2, -10, 0);
+      ctx.closePath();
       ctx.fill();
 
       ctx.restore();
@@ -92,61 +128,66 @@ window.FlappyGame = {
     function drawPipe(p) {
       const gapY = p.topH + GAP;
       
-      // Top pipe: Laser barrier style
+      ctx.save();
+      // Neon green column style (glow)
+      ctx.shadowColor = '#84cc16';
+      ctx.shadowBlur = 8;
+      
+      // Top Pipe Column Gradient
       const topGrad = ctx.createLinearGradient(p.x, 0, p.x + PIPE_W, 0);
-      topGrad.addColorStop(0, 'rgba(236, 72, 153, 0.4)');
-      topGrad.addColorStop(0.5, '#ec4899');
-      topGrad.addColorStop(1, 'rgba(236, 72, 153, 0.4)');
+      topGrad.addColorStop(0, '#3f6212');
+      topGrad.addColorStop(0.3, '#a3e635');
+      topGrad.addColorStop(0.7, '#84cc16');
+      topGrad.addColorStop(1, '#3f6212');
+
       ctx.fillStyle = topGrad;
+      // Top pipe
       ctx.fillRect(p.x, 0, PIPE_W, p.topH);
+      // Top pipe lip
+      ctx.fillStyle = '#a3e635';
+      ctx.fillRect(p.x - 3, p.topH - 18, PIPE_W + 6, 18);
+      ctx.strokeStyle = '#4d7c0f';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(p.x - 3, p.topH - 18, PIPE_W + 6, 18);
 
-      // Top pipe glowing head
-      ctx.shadowColor = '#ec4899';
-      ctx.shadowBlur = 15;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(p.x - 2, p.topH - 12, PIPE_W + 4, 14);
-
-      // Bottom pipe: Laser barrier style
+      // Bottom Pipe Column
       const bottomGrad = ctx.createLinearGradient(p.x, gapY, p.x + PIPE_W, gapY);
-      bottomGrad.addColorStop(0, 'rgba(236, 72, 153, 0.4)');
-      bottomGrad.addColorStop(0.5, '#ec4899');
-      bottomGrad.addColorStop(1, 'rgba(236, 72, 153, 0.4)');
+      bottomGrad.addColorStop(0, '#3f6212');
+      bottomGrad.addColorStop(0.3, '#a3e635');
+      bottomGrad.addColorStop(0.7, '#84cc16');
+      bottomGrad.addColorStop(1, '#3f6212');
+      
       ctx.fillStyle = bottomGrad;
       ctx.fillRect(p.x, gapY, PIPE_W, H-gapY-60);
+      
+      // Bottom pipe lip
+      ctx.fillStyle = '#a3e635';
+      ctx.fillRect(p.x - 3, gapY, PIPE_W + 6, 18);
+      ctx.strokeRect(p.x - 3, gapY, PIPE_W + 6, 18);
 
-      // Bottom pipe glowing head
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(p.x - 2, gapY, PIPE_W + 4, 14);
-      ctx.shadowBlur = 0;
-
-      // Laser stream inside the pipe columns
-      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(p.x + PIPE_W/2, 0);
-      ctx.lineTo(p.x + PIPE_W/2, p.topH);
-      ctx.moveTo(p.x + PIPE_W/2, gapY);
-      ctx.lineTo(p.x + PIPE_W/2, H-60);
-      ctx.stroke();
+      ctx.restore();
     }
 
     function drawGround() {
       // Dark cybernetic floor
-      ctx.fillStyle = '#0a0a16';
+      ctx.fillStyle = '#080816';
       ctx.fillRect(0, H-60, W, 60);
       
-      ctx.strokeStyle = '#ec4899';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#22d3ee';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#06b6d4';
+      ctx.shadowBlur = 10;
       ctx.beginPath();
       ctx.moveTo(0, H-60);
       ctx.lineTo(W, H-60);
       ctx.stroke();
+      ctx.shadowBlur = 0;
 
-      // Moving cyber floor lines
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+      // Moving cyber floor grid
+      ctx.strokeStyle = 'rgba(217, 70, 239, 0.25)';
       ctx.lineWidth = 1.5;
-      for(let i=0;i<10;i++) {
-        const gx = ((frame*PIPE_SPEED*0.7 + i*50) % (W + 60)) - 30;
+      for(let i=0;i<12;i++) {
+        const gx = ((frame * PIPE_SPEED * 0.7 + i * 40) % (W + 40)) - 20;
         ctx.beginPath();
         ctx.moveTo(gx, H-60);
         ctx.lineTo(gx - 15, H);
@@ -155,17 +196,17 @@ window.FlappyGame = {
     }
 
     function drawClouds() {
-      const cloudX1 = (W - (frame*0.3)%W+W)%W;
-      const cloudX2 = (W - (frame*0.2+180)%W+W)%W;
-      const draw = (x,y) => {
+      clouds.forEach(c => {
         ctx.fillStyle = 'rgba(255,255,255,0.2)';
         ctx.beginPath();
-        ctx.arc(x,y,20,0,Math.PI*2);
-        ctx.arc(x+18,y-6,16,0,Math.PI*2);
-        ctx.arc(x+34,y,18,0,Math.PI*2);
+        ctx.arc(c.x, c.y, c.w/3, 0, Math.PI*2);
+        ctx.arc(c.x + c.w/4, c.y - 5, c.w/3.5, 0, Math.PI*2);
+        ctx.arc(c.x + c.w/2, c.y, c.w/3, 0, Math.PI*2);
         ctx.fill();
-      };
-      draw(cloudX1, 80); draw(cloudX2, 140);
+        
+        if (gameState === 'playing') c.x -= c.speed;
+        if (c.x + c.w < -20) { c.x = W + 40; c.y = 40 + Math.random()*80; }
+      });
     }
 
     function update() {
@@ -175,15 +216,15 @@ window.FlappyGame = {
       if(gameState !== 'playing') return;
 
       bird.vy += GRAVITY;
-      bird.vy = Math.min(bird.vy, 10);
+      bird.vy = Math.min(bird.vy, 9.5);
       bird.y += bird.vy;
-      bird.angle = Math.max(-30, Math.min(90, bird.vy*4));
+      bird.angle = Math.max(-25, Math.min(80, bird.vy * 4.5));
 
       // Pipes
       pipeTimer++;
       if(pipeTimer >= PIPE_INTERVAL) { spawnPipe(); pipeTimer=0; }
       pipes.forEach(p => p.x -= PIPE_SPEED * (1+score*0.01));
-      pipes = pipes.filter(p => p.x > -PIPE_W-10);
+      pipes = pipes.filter(p => p.x > -PIPE_W-15);
 
       // Score
       pipes.forEach(p => {
@@ -199,23 +240,32 @@ window.FlappyGame = {
       if(bird.y > H-60-bird.r || bird.y < bird.r) { die(); return; }
       for(const p of pipes) {
         if(bird.x+bird.r>p.x && bird.x-bird.r<p.x+PIPE_W) {
-          if(bird.y-bird.r<p.topH || bird.y+bird.r>p.topH+GAP) { die(); return; }
+          if(bird.y-bird.r+2<p.topH || bird.y+bird.r-2>p.topH+GAP) { die(); return; }
         }
       }
 
       // Particles
       particles = particles.filter(pt => {
-        pt.x+=pt.vx; pt.y+=pt.vy; pt.vy+=0.1; pt.life-=0.06;
+        pt.x+=pt.vx; pt.y+=pt.vy; pt.vy+=0.06; pt.life-=pt.decay;
         return pt.life>0;
       });
     }
 
     function die() {
       gameState = 'dead';
-      for(let i=0;i<20;i++) {
+      for(let i=0;i<24;i++) {
         const angle = Math.random()*Math.PI*2;
-        const s = Math.random()*5+2;
-        particles.push({x:bird.x, y:bird.y, vx:Math.cos(angle)*s, vy:Math.sin(angle)*s, life:1, size:Math.random()*6+2});
+        const s = Math.random()*5+2.5;
+        particles.push({
+          x:bird.x, 
+          y:bird.y, 
+          vx:Math.cos(angle)*s, 
+          vy:Math.sin(angle)*s, 
+          life:1, 
+          size:Math.random()*5+2.5,
+          color: Math.random() < 0.5 ? '#22d3ee' : '#d946ef',
+          decay: 0.04
+        });
       }
       setTimeout(()=>{
         window.gameOver?.(score);
@@ -234,9 +284,9 @@ window.FlappyGame = {
       // Particles
       particles.forEach(p => {
         ctx.globalAlpha = p.life;
-        ctx.fillStyle = '#fbbf24';
-        ctx.shadowColor = '#fbbf24';
-        ctx.shadowBlur = 6;
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size*p.life, 0, Math.PI*2);
         ctx.fill();
@@ -245,30 +295,30 @@ window.FlappyGame = {
 
       if(gameState !== 'dead') drawBird(bird);
 
-      // Score display
+      // Score displays
       ctx.fillStyle = 'white';
       ctx.font = 'bold 36px Orbitron, monospace';
       ctx.textAlign = 'center';
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowColor = 'rgba(0,0,0,0.4)';
       ctx.shadowBlur = 4;
-      ctx.fillText(score, W/2, 60);
-      ctx.font = '14px Orbitron, monospace';
+      ctx.fillText(score, W/2, 65);
+      ctx.font = '13px Orbitron, monospace';
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.fillText(`BEST: ${best}`, W/2, 82);
+      ctx.fillText(`BEST: ${best}`, W/2, 86);
       ctx.textAlign = 'left';
       ctx.shadowBlur = 0;
 
       // Ready screen
       if(gameState === 'ready') {
-        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.fillStyle = 'rgba(3,3,15,0.5)';
         ctx.fillRect(0,0,W,H);
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 22px Orbitron, monospace';
+        ctx.font = 'bold 20px Orbitron, monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('TAP / SPACE', W/2, H/2-10);
-        ctx.font = '14px Outfit, sans-serif';
+        ctx.fillText('TAP / SPACE', W/2, H/2-8);
+        ctx.font = '12px Outfit, sans-serif';
         ctx.fillStyle = 'rgba(255,255,255,0.7)';
-        ctx.fillText('untuk mulai terbang!', W/2, H/2+18);
+        ctx.fillText('untuk mulai terbang!', W/2, H/2+14);
         ctx.textAlign = 'left';
       }
 
@@ -282,7 +332,7 @@ window.FlappyGame = {
       overlay.className = 'game-over-overlay';
       overlay.innerHTML = `
         <div class="game-over-content">
-          <div class="game-over-title" style="color:#84cc16">GAME OVER</div>
+          <div class="game-over-title" style="color:#a3e635">GAME OVER</div>
           <div class="game-over-score">Skor: ${score}</div>
           <div class="game-over-best">Best: ${best}</div>
           <div class="game-over-actions">
