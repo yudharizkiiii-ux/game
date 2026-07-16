@@ -37,9 +37,18 @@ window.SnakeGame = {
     placeFood();
 
     function addParticle(x, y) {
-      for(let i=0;i<8;i++) {
-        const angle = (Math.PI*2/8)*i;
-        particles.push({x:x*CELL+CELL/2, y:y*CELL+CELL/2, vx:Math.cos(angle)*3, vy:Math.sin(angle)*3, life:1, color:`hsl(${120+Math.random()*60},80%,60%)`});
+      for(let i=0;i<15;i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 3 + 1;
+        particles.push({
+          x: x*CELL + CELL/2,
+          y: y*CELL + CELL/2,
+          vx: Math.cos(angle)*speed,
+          vy: Math.sin(angle)*speed,
+          life: 1,
+          color: `hsl(${120+Math.random()*60}, 90%, 60%)`,
+          size: Math.random()*3 + 2
+        });
       }
     }
 
@@ -59,30 +68,27 @@ window.SnakeGame = {
         window.updateScore(score);
         addParticle(food.x, food.y);
         placeFood();
-        if (speed > 60) speed -= 3;
+        if (speed > 60) {
+          speed -= 3;
+          clearInterval(timerId);
+          timerId = setInterval(update, speed);
+        }
       } else {
         snake.pop();
       }
-    }
-
-    function drawRoundRect(x, y, w, h, r, color) {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.roundRect(x,y,w,h,r);
-      ctx.fill();
     }
 
     function draw() {
       frame++;
       // Background gradient
       const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-      bgGrad.addColorStop(0, '#0a0a16');
-      bgGrad.addColorStop(1, '#12122b');
+      bgGrad.addColorStop(0, '#090a15');
+      bgGrad.addColorStop(1, '#111226');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
-      // Grid lines with neon blue cyber pulse
-      ctx.strokeStyle = 'rgba(6,182,212,0.06)';
+      // Grid lines
+      ctx.strokeStyle = 'rgba(6,182,212,0.04)';
       ctx.lineWidth = 1;
       for(let x=0;x<=COLS;x++) { 
         ctx.beginPath(); 
@@ -97,8 +103,8 @@ window.SnakeGame = {
         ctx.stroke(); 
       }
 
-      // Dynamic glowing grid border
-      ctx.strokeStyle = 'rgba(16,185,129,0.3)';
+      // Border glow
+      ctx.strokeStyle = 'rgba(16,185,129,0.2)';
       ctx.lineWidth = 2;
       ctx.strokeRect(0, 0, W, H);
 
@@ -107,69 +113,113 @@ window.SnakeGame = {
       particles.forEach(p => {
         ctx.globalAlpha = p.life;
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 8;
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4*p.life, 0, Math.PI*2);
+        ctx.arc(p.x, p.y, p.size*p.life, 0, Math.PI*2);
         ctx.fill();
-        p.x += p.vx; p.y += p.vy; p.vx *= 0.92; p.vy *= 0.92; p.life -= 0.04;
+        p.x += p.vx; p.y += p.vy; p.vx *= 0.93; p.vy *= 0.93; p.life -= 0.03;
       });
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
 
-      // Food with 4D outer neon glow
-      const foodPulse = Math.sin(frame * 0.15) * 5;
-      ctx.shadowColor = '#ef4444';
-      ctx.shadowBlur = 15 + foodPulse;
-      drawRoundRect(food.x*CELL+2, food.y*CELL+2, CELL-4, CELL-4, 5, '#ef4444');
-      
-      // Food inner pulse
-      ctx.shadowColor = '#f59e0b';
-      ctx.shadowBlur = 5;
-      drawRoundRect(food.x*CELL+5, food.y*CELL+5, CELL-10, CELL-10, 3, '#f59e0b');
-      ctx.shadowBlur = 0;
+      // Draw Food (Pulsing neon glowing sphere)
+      if (food) {
+        const foodPulse = Math.sin(frame * 0.15) * 2;
+        const fx = food.x * CELL + CELL/2;
+        const fy = food.y * CELL + CELL/2;
+        const r = (CELL/2 - 2) + foodPulse * 0.5;
 
-      // Snake body with glowing gradient trails and digital pulse wave
+        ctx.shadowColor = '#ef4444';
+        ctx.shadowBlur = 15 + foodPulse * 3;
+
+        // Food main body
+        const foodGrad = ctx.createRadialGradient(fx - 2, fy - 2, 1, fx, fy, r);
+        foodGrad.addColorStop(0, '#fca5a5');
+        foodGrad.addColorStop(0.3, '#ef4444');
+        foodGrad.addColorStop(1, '#991b1b');
+        
+        ctx.fillStyle = foodGrad;
+        ctx.beginPath();
+        ctx.arc(fx, fy, r, 0, Math.PI*2);
+        ctx.fill();
+
+        // Food stem
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(fx, fy - r);
+        ctx.quadraticCurveTo(fx + 3, fy - r - 4, fx + 5, fy - r - 3);
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+      }
+
+      // Draw Snake (3D round segment scaling)
       snake.forEach((seg, i) => {
         const isHead = i === 0;
-        const ratio = 1 - (i / snake.length);
-        const wave = Math.sin(frame * 0.2 - i * 0.5) * 2;
-        const h = 130 + (i / snake.length) * 45;
+        const ratio = 1 - (i / snake.length) * 0.45; // taper towards the tail
+        const size = (CELL / 2 - 1.5) * ratio;
         
-        ctx.shadowColor = `hsl(${h}, 85%, 55%)`;
-        ctx.shadowBlur = isHead ? 20 : 8 + wave;
-        
-        const sizeOffset = isHead ? 0 : 1 + (i / snake.length) * 2;
-        const color = `hsl(${h}, 85%, ${isHead ? 50 : 40 + ratio * 20}%)`;
-        
-        drawRoundRect(
-          seg.x * CELL + sizeOffset, 
-          seg.y * CELL + sizeOffset, 
-          CELL - sizeOffset * 2, 
-          CELL - sizeOffset * 2, 
-          isHead ? 7 : 4, 
-          color
-        );
+        const cx = seg.x * CELL + CELL/2;
+        const cy = seg.y * CELL + CELL/2;
 
-        // Head eyes
+        const h = 130 + (i / snake.length) * 45;
+        ctx.shadowColor = `hsl(${h}, 85%, 55%)`;
+        ctx.shadowBlur = isHead ? 15 : 6;
+
+        // Body gradient
+        const segGrad = ctx.createRadialGradient(cx - size/3, cy - size/3, 1, cx, cy, size);
+        if (isHead) {
+          segGrad.addColorStop(0, '#ffffff');
+          segGrad.addColorStop(0.4, '#10b981');
+          segGrad.addColorStop(1, '#064e3b');
+        } else {
+          segGrad.addColorStop(0, `hsl(${h}, 85%, 65%)`);
+          segGrad.addColorStop(0.5, `hsl(${h}, 85%, 45%)`);
+          segGrad.addColorStop(1, `hsl(${h}, 85%, 25%)`);
+        }
+
+        ctx.fillStyle = segGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, size, 0, Math.PI*2);
+        ctx.fill();
+
+        // Draw eyes and pupils on Head
         if (isHead) {
           ctx.shadowBlur = 0;
           ctx.fillStyle = '#ffffff';
-          // Simplified eyes with nice neon glow
-          if (dir.x === 1) { ctx.fillRect(seg.x*CELL+12,seg.y*CELL+4,4,4); ctx.fillRect(seg.x*CELL+12,seg.y*CELL+12,4,4); }
-          else if (dir.x === -1) { ctx.fillRect(seg.x*CELL+4,seg.y*CELL+4,4,4); ctx.fillRect(seg.x*CELL+4,seg.y*CELL+12,4,4); }
-          else if (dir.y === 1) { ctx.fillRect(seg.x*CELL+4,seg.y*CELL+12,4,4); ctx.fillRect(seg.x*CELL+12,seg.y*CELL+12,4,4); }
-          else { ctx.fillRect(seg.x*CELL+4,seg.y*CELL+4,4,4); ctx.fillRect(seg.x*CELL+12,seg.y*CELL+4,4,4); }
+          let ex1, ey1, ex2, ey2;
+          
+          if (dir.x === 1) { // Right
+            ex1 = cx + 4; ey1 = cy - 4; ex2 = cx + 4; ey2 = cy + 4;
+          } else if (dir.x === -1) { // Left
+            ex1 = cx - 4; ey1 = cy - 4; ex2 = cx - 4; ey2 = cy + 4;
+          } else if (dir.y === 1) { // Down
+            ex1 = cx - 4; ey1 = cy + 4; ex2 = cx + 4; ey2 = cy + 4;
+          } else { // Up
+            ex1 = cx - 4; ey1 = cy - 4; ex2 = cx + 4; ey2 = cy - 4;
+          }
+          
+          ctx.beginPath(); ctx.arc(ex1, ey1, 2.5, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(ex2, ey2, 2.5, 0, Math.PI*2); ctx.fill();
+          
+          // Pupils (Black dots looking in direction of motion)
+          ctx.fillStyle = '#000000';
+          const px = dir.x * 0.7;
+          const py = dir.y * 0.7;
+          ctx.beginPath(); ctx.arc(ex1 + px, ey1 + py, 1.2, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(ex2 + px, ey2 + py, 1.2, 0, Math.PI*2); ctx.fill();
         }
       });
       ctx.shadowBlur = 0;
 
-      // Score overlay
+      // Score overlay UI
       ctx.fillStyle = 'rgba(10, 10, 26, 0.8)';
       ctx.strokeStyle = 'rgba(6,182,212,0.2)';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.roundRect(8,8,120,38,10);
+      ctx.roundRect(8, 8, 120, 38, 10);
       ctx.fill();
       ctx.stroke();
       
@@ -180,7 +230,9 @@ window.SnakeGame = {
       ctx.fillText(`SCORE: ${score}`, 18, 31);
       ctx.shadowBlur = 0;
 
-      animId = requestAnimationFrame(draw);
+      if (gameRunning) {
+        animId = requestAnimationFrame(draw);
+      }
     }
 
     function endGame() {

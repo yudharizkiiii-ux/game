@@ -59,6 +59,20 @@ const GAMES = [
     category: 'arcade', color: '#d97706',
     gradient: 'linear-gradient(135deg, #431407, #d97706)',
     isNew: true
+  },
+  {
+    id: 'chess', name: 'Catur', icon: '👑',
+    desc: 'Uji strategi dan taktikmu dalam duel catur klasik melawan AI!',
+    category: 'puzzle', color: '#8b5cf6',
+    gradient: 'linear-gradient(135deg, #2e1065, #8b5cf6)',
+    isNew: true
+  },
+  {
+    id: 'ludo', name: 'Ludo', icon: '🎲',
+    desc: 'Putar dadu dan jalankan bidakmu menuju garis finis sebelum lawan!',
+    category: 'arcade', color: '#10b981',
+    gradient: 'linear-gradient(135deg, #064e3b, #10b981)',
+    isNew: true
   }
 ];
 
@@ -727,6 +741,8 @@ function launchGame(gameId) {
     shooter: () => window.ShooterGame?.launch(),
     flappy: () => window.FlappyGame?.launch(),
     dino: () => window.DinoGame?.launch(),
+    chess: () => window.ChessGame?.launch(),
+    ludo: () => window.LudoGame?.launch(),
   };
   const launcher = launchers[gameId];
   if (launcher) {

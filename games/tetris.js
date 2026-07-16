@@ -49,6 +49,7 @@ window.TetrisGame = {
     let gameRunning = true;
     let animId, dropTimer, dropInterval = 800;
     let flashLines = [];
+    let particles = [];
 
     function randomPiece() {
       return {...PIECES[Math.floor(Math.random()*PIECES.length)]};
@@ -91,11 +92,34 @@ window.TetrisGame = {
       spawnPiece();
     }
 
+    function addLineClearParticles(rowY) {
+      for (let c = 0; c < COLS; c++) {
+        const x = c * BLOCK + BLOCK/2;
+        const y = rowY * BLOCK + BLOCK/2;
+        const pColor = board[rowY][c] || '#06b6d4';
+        
+        for (let i = 0; i < 6; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const s = Math.random() * 4 + 2;
+          particles.push({
+            x, y,
+            vx: Math.cos(angle) * s,
+            vy: Math.sin(angle) * s - 0.5,
+            life: 1,
+            color: pColor,
+            size: Math.random() * 3 + 1.5,
+            decay: 0.04 + Math.random() * 0.02
+          });
+        }
+      }
+    }
+
     function clearLines() {
       let cleared = 0;
       for(let r=ROWS-1;r>=0;r--) {
         if(board[r].every(v=>v)) {
           flashLines.push(r);
+          addLineClearParticles(r);
           board.splice(r,1);
           board.unshift(Array(COLS).fill(0));
           cleared++; r++;
@@ -111,7 +135,7 @@ window.TetrisGame = {
         document.getElementById('tetris-level').textContent = level;
         document.getElementById('tetris-lines').textContent = lines;
         restartDrop();
-        setTimeout(()=>flashLines=[], 200);
+        setTimeout(()=>flashLines=[], 250);
       }
     }
 
@@ -131,29 +155,25 @@ window.TetrisGame = {
     }
 
     function drawBlock(ctx, x, y, color, size=BLOCK) {
-      // 4D Neon Block
+      // Shaded metallic/glass look
       const g = ctx.createLinearGradient(x, y, x + size, y + size);
-      g.addColorStop(0, lighten(color, 40));
-      g.addColorStop(0.5, color);
-      g.addColorStop(1, darken(color, 40));
+      g.addColorStop(0, lighten(color, 45));
+      g.addColorStop(0.4, color);
+      g.addColorStop(1, darken(color, 45));
       ctx.fillStyle = g;
       
-      // Draw rounded rect with glow
+      // Draw rounded rect with neon shadow glow
       ctx.shadowColor = color;
       ctx.shadowBlur = 10;
       ctx.beginPath();
-      ctx.roundRect(x + 1.5, y + 1.5, size - 3, size - 3, 4);
+      ctx.roundRect(x + 1, y + 1, size - 2, size - 2, 4);
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // Inner stroke for 4D glass bezel effect
-      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      // Highlight inner bezel line
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(x + 2.5, y + 2.5, size - 5, size - 5);
-
-      // Cyber gloss flare
-      ctx.fillStyle = 'rgba(255,255,255,0.2)';
-      ctx.fillRect(x + 3.5, y + 3.5, size - 7, 2);
+      ctx.strokeRect(x + 2, y + 2, size - 4, size - 4);
     }
 
     function lighten(hex, amt) {
@@ -175,14 +195,14 @@ window.TetrisGame = {
     }
 
     function draw() {
-      // Gradient background
+      // Sky background gradient
       const bgGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      bgGrad.addColorStop(0, '#090915');
-      bgGrad.addColorStop(1, '#111124');
+      bgGrad.addColorStop(0, '#04040d');
+      bgGrad.addColorStop(1, '#0e0c1b');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0,0,canvas.width,canvas.height);
 
-      // Neon-pulse grid lines
+      // Grid lines
       ctx.strokeStyle = 'rgba(6, 182, 212, 0.05)';
       ctx.lineWidth = 0.5;
       for(let x=0;x<=COLS;x++) { ctx.beginPath(); ctx.moveTo(x*BLOCK,0); ctx.lineTo(x*BLOCK,canvas.height); ctx.stroke(); }
@@ -192,9 +212,10 @@ window.TetrisGame = {
       board.forEach((row,r) => row.forEach((color,c) => {
         if(color) {
           if(flashLines.includes(r)) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.shadowColor = '#fff';
-            ctx.shadowBlur = 15;
+            // Flash effect on clear
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 18;
             ctx.fillRect(c*BLOCK,r*BLOCK,BLOCK,BLOCK);
             ctx.shadowBlur = 0;
           } else {
@@ -203,16 +224,16 @@ window.TetrisGame = {
         }
       }));
 
-      // Ghost piece with dotted neon outlines
+      // Ghost piece (neon projection helper)
       if(current) {
         const gy = getGhostY();
         current.shape.forEach((row,r) => row.forEach((v,c) => {
           if(v) {
             ctx.strokeStyle = current.color;
             ctx.shadowColor = current.color;
-            ctx.shadowBlur = 8;
+            ctx.shadowBlur = 7;
             ctx.lineWidth = 1.5;
-            ctx.setLineDash([2, 2]);
+            ctx.setLineDash([2, 3]);
             ctx.strokeRect(
               (currentPos.x+c)*BLOCK+2, (gy+r)*BLOCK+2, BLOCK-4, BLOCK-4
             );
@@ -229,7 +250,24 @@ window.TetrisGame = {
         }));
       }
 
-      animId = requestAnimationFrame(draw);
+      // Render line clear explosion particles
+      particles = particles.filter(p => p.life > 0);
+      particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size*p.life, 0, Math.PI*2);
+        ctx.fill();
+        p.x += p.vx; p.y += p.vy; p.vx *= 0.94; p.vy *= 0.94; p.life -= p.decay;
+      });
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+
+      if (gameRunning) {
+        animId = requestAnimationFrame(draw);
+      }
     }
 
     function drawNext() {
@@ -240,7 +278,7 @@ window.TetrisGame = {
       nextCtx.fillStyle = nextBgGrad;
       nextCtx.fillRect(0,0,100,100);
 
-      // Mini grid for preview
+      // Grid for preview panel
       nextCtx.strokeStyle = 'rgba(255,255,255,0.02)';
       for(let i=0; i<=5; i++) {
         nextCtx.beginPath(); nextCtx.moveTo(i*20, 0); nextCtx.lineTo(i*20, 100); nextCtx.stroke();
